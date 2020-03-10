@@ -2,6 +2,11 @@
 
 ![infra](https://user-images.githubusercontent.com/4990822/76337289-7aefa480-633a-11ea-96d9-826fb03c3f62.png)
 
+## Features
+
+* 放送でまだ読まれていない記事一覧を返すAPIを提供します
+* 毎週日曜・夕方頃に今週の執筆状況をDiscordで通知します
+
 ## Setup
 
 ```console
