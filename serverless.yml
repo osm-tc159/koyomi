@@ -1,0 +1,31 @@
+service:
+  name: koyomi
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+
+package:
+  individually: true
+
+plugins:
+  - serverless-webpack
+
+provider:
+  name: aws
+  region: ap-northeast-1
+  stage: ${opt:stage, 'sandbox'} # Set the default stage used. Default is sandbox
+  runtime: nodejs12.x
+  apiGateway:
+    minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+
+functions:
+  getUnreadPosts:
+    handler: src/api.getUnreadPosts
+    events:
+      - http:
+          method: get
+          path: posts/unread
