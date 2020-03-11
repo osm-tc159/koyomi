@@ -10,6 +10,7 @@
   "repository": "https://github.com/osm-tc159/koyomi",
   "private": true,
   "dependencies": {
+    "googleapis": "^47.0.0",
     "source-map-support": "^0.5.10"
   },
   "devDependencies": {

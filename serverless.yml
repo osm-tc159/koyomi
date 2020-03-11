@@ -25,6 +25,10 @@ provider:
 functions:
   getUnreadPosts:
     handler: src/api.getUnreadPosts
+    environment:
+      SPREADSHEET_ID: ${ssm:/koyomi/${self:provider.stage}/SPREADSHEET_ID}
+      CALENDAR_SHEET_NAME: ${ssm:/koyomi/${self:provider.stage}/CALENDAR_SHEET_NAME}
+      GOOGLE_API_CREDENTIAL_JSON: ${ssm:/koyomi/${self:provider.stage}/GOOGLE_API_CREDENTIAL_JSON}
     events:
       - http:
           method: get
