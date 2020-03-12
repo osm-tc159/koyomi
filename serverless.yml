@@ -7,12 +7,16 @@ custom:
     includeModules: true
   logRetentionInDays:
     sandbox: "1"
+  prune:
+    automatic: true
+    number: 3
 
 package:
   individually: true
 
 plugins:
   - serverless-webpack
+  - serverless-prune-plugin
 
 provider:
   name: aws
