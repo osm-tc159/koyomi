@@ -5,6 +5,8 @@ custom:
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules: true
+  logRetentionInDays:
+    sandbox: "1"
 
 package:
   individually: true
@@ -21,6 +23,7 @@ provider:
     minimumCompressionSize: 1024 # Enable gzip compression for responses > 1 KB
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+  logRetentionInDays: ${self:custom.logRetentionInDays.${opt:stage}}
 
 functions:
   getUnreadPosts:
