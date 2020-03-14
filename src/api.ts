@@ -1,6 +1,14 @@
 import { APIGatewayProxyHandler } from 'aws-lambda';
 import { google } from 'googleapis';
+import * as dayjs from 'dayjs';
+import 'dayjs/locale/ja';
+import * as utc from 'dayjs/plugin/utc';
+import * as weekday from 'dayjs/plugin/weekday';
 import 'source-map-support/register';
+
+dayjs.locale('ja');
+dayjs.extend(utc);
+dayjs.extend(weekday);
 
 const {
   SPREADSHEET_ID,
@@ -32,16 +40,12 @@ export const getUnreadPosts: APIGatewayProxyHandler = async () => {
 
   // フィルタータイプは NUMBER_GREATER_THAN_EQ なので、最後に読んだ日は `設定値 - 1` 日
   // TODO max(今までの最大値, 今取得した値) を「最後に読んだ日」としないと、シートのフィルター操作中おかしくなる
-  const lastReadDay = parseInt(filter.condition.values[0].userEnteredValue, 10) - 1;
-
-  const from = lastReadDay + 1;
-  const to = from + 6; // FIXME
-  const range = `${CALENDAR_SHEET_NAME}!A${from + 1}:E${to + 1}`;
+  const lastReadDayNumber = parseInt(filter.condition.values[0].userEnteredValue, 10) - 1;
 
   const got = await google.sheets('v4').spreadsheets.values.get({
     auth,
     spreadsheetId: SPREADSHEET_ID,
-    range,
+    range: computeRange(lastReadDayNumber),
   });
 
   const posts = [];
@@ -59,4 +63,16 @@ export const getUnreadPosts: APIGatewayProxyHandler = async () => {
     statusCode: 200,
     body: JSON.stringify({ posts }),
   };
+};
+
+const computeRange = (lastReadDayNumber: number): string => {
+  const from = lastReadDayNumber + 1;
+
+  const today = dayjs().utcOffset(9).startOf('day');
+  const nearSunday = today.weekday() === 0 ? today : today.weekday(7);
+
+  const epoch = dayjs('2014-12-08T00:00:00+09:00');
+  const to = 1 + ((nearSunday.unix() - epoch.unix()) / (60 * 60 * 24));
+
+  return `${CALENDAR_SHEET_NAME}!A${from + 1}:E${to + 1}`;
 };
