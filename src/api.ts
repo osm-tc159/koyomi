@@ -50,9 +50,11 @@ export const getUnreadPosts: APIGatewayProxyHandler = async () => {
 
   const posts = [];
   for (const row of got.data.values) {
+    const day = parseInt(row[COLUMN_IDX.DAY_NO], 10);
+
     posts.push({
-      day: parseInt(row[COLUMN_IDX.DAY_NO], 10),
-      date: row[COLUMN_IDX.DATE], // TODO セルの値がそのまま渡ってくるため OAC Day Number から導出した日付がよいかもしれない
+      day,
+      date: odnToDate(day).toISOString(),
       author: row[COLUMN_IDX.AUTHOR] ?? '',
       title: row[COLUMN_IDX.TITLE] ?? '',
       url: row[COLUMN_IDX.URL] ?? '',
@@ -65,14 +67,17 @@ export const getUnreadPosts: APIGatewayProxyHandler = async () => {
   };
 };
 
+const ODN_EPOCH = dayjs('2014-12-08T00:00:00+09:00');
+
 const computeRange = (lastReadDayNumber: number): string => {
   const from = lastReadDayNumber + 1;
 
   const today = dayjs().utcOffset(9).startOf('day');
   const nearSunday = today.weekday() === 0 ? today : today.weekday(7);
 
-  const epoch = dayjs('2014-12-08T00:00:00+09:00');
-  const to = 1 + ((nearSunday.unix() - epoch.unix()) / (60 * 60 * 24));
+  const to = 1 + ((nearSunday.unix() - ODN_EPOCH.unix()) / (60 * 60 * 24));
 
   return `${CALENDAR_SHEET_NAME}!A${from + 1}:E${to + 1}`;
 };
+
+const odnToDate = (odn: number): dayjs.Dayjs => ODN_EPOCH.add(odn - 1, 'day');
