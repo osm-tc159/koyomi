@@ -48,22 +48,30 @@ export const getUnreadPosts: APIGatewayProxyHandler = async () => {
     range: computeRange(lastReadDayNumber),
   });
 
-  const posts = [];
+  const posts: IPost[] = [];
   for (const row of got.data.values) {
     const day = parseInt(row[COLUMN_IDX.DAY_NO], 10);
 
-    posts.push({
+    const post: IPost = {
       day,
-      date: odnToDate(day).toISOString(),
+      date: odnToDate(day),
       author: row[COLUMN_IDX.AUTHOR] ?? '',
       title: row[COLUMN_IDX.TITLE] ?? '',
       url: row[COLUMN_IDX.URL] ?? '',
-    });
+    };
+
+    if (false === isQualifiedPost(post)) {
+      continue;
+    }
+
+    posts.push(post);
   };
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ posts }),
+    body: JSON.stringify({
+      posts: posts.map((p) => ({...p, date: p.date.toISOString() }))
+    }),
   };
 };
 
@@ -81,3 +89,27 @@ const computeRange = (lastReadDayNumber: number): string => {
 };
 
 const odnToDate = (odn: number): dayjs.Dayjs => ODN_EPOCH.add(odn - 1, 'day');
+
+interface IPost {
+  day: number;
+  date: dayjs.Dayjs
+  author: string;
+  title: string;
+  url: string;
+}
+
+const isQualifiedPost = ({ author, title, url }: IPost): boolean => {
+  if (author.trim() === '' || author.trim().startsWith('(') || author.trim().startsWith('（')) {
+    return false;
+  }
+
+  if (title.trim() === '') {
+    return false;
+  }
+
+  if (url.trim() === '') {
+    return false;
+  }
+
+  return true;
+};
