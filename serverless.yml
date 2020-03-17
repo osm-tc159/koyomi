@@ -21,6 +21,7 @@ plugins:
 provider:
   name: aws
   region: ap-northeast-1
+  profile: ${opt:profile, 'default'}
   stage: ${opt:stage, 'sandbox'} # Set the default stage used. Default is sandbox
   deploymentBucket:
     maxPreviousDeploymentArtifacts: ${self:custom.prune.number}
